@@ -1,0 +1,133 @@
+//
+//  ViewController.swift
+//  DemoJson
+//
+//  Created by MinKo on 5/19/19.
+//  Copyright © 2019 Minko. All rights reserved.
+//
+
+import UIKit
+
+struct Country: Decodable {
+    let name: String
+    let capital: String
+    let region: String
+}
+
+class ViewController: UIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view.
+//        loadData()
+//        loadData2()
+        loadGet()
+//        loadPost()
+    }
+    
+    func loadData(){
+        let url = "https://restcountries.eu/rest/v2/all"
+        let urlObj = URL(string: url)
+        
+        URLSession.shared.dataTask(with: urlObj!) {(data, response, error) in
+            do {
+                let countries = try JSONDecoder().decode([Country].self, from: data!)
+                print(countries.count)
+                for item in countries {
+                    print(item.self)
+                }
+            } catch {
+                print("We got an error")
+            }
+        }.resume()
+    
+    }
+    
+    func loadData2(){
+//        let consumer_key = "YWRAq7EKtUk1U3wENMNKEvGgL"
+//        let consumer_secret = "2e08byjGV1k0XvPcwUwBoIxMDT7RozjdmEdk03RqCvUMqtE7nH"
+//        let access_token = "3681130275-Onust8RaEz7Yczw07sWz52vLsEnxRCnnFDXZ5qA"
+//        let access_token_secret = "dwLn951PF4bCh96xd170NCGpgOb5iRkqwgoNvTignDEMq"
+        let token = "wpXNVIXNF39AhV8Qha-W2N8B-sKzHFmz5d9aRL6rXMb836jMZOvSOnfvYpW5Vzy6TAcuLbmKGU7DnwF1I8MPG_P7SRxQzTuD8LacU2IwGPcsjkL0ztlFXEzIAkXeXHYx"
+        
+        let urlString = "https://api.yelp.com/v3/businesses/search"
+        var request = URLRequest(url: URL(string:urlString)!)
+        
+        // set the method(HTTP-POST)
+        request.httpMethod = "POST"
+        // set the header(s)
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(token, forHTTPHeaderField: "Authorization")
+        
+        // set the request-body(JSON)
+        let params: [String: Any] = ["Temp":"Thai","latitude":"37.774866","longitude":"-122.394556"]
+      
+        do{
+            request.httpBody = try JSONSerialization.data(withJSONObject: params, options: [])
+        }catch{
+            print(error.localizedDescription)
+        }
+        // use NSURLSessionDataTask
+        let task = URLSession.shared.dataTask(with: request, completionHandler: {data, response, error in
+            if (error == nil) {
+                let result = String(data: data!, encoding: .utf8)!
+                print("result:\(result)")
+                // 500 Internal Server Error
+            } else {
+                print(error?.localizedDescription ?? "error")
+            }
+        })
+        task.resume()
+    }
+    
+    func loadGet(){
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else { return }
+        
+        let session = URLSession.shared
+        session.dataTask(with: url) { (data, response, error) in
+            if let response = response {
+                print(response)
+            }
+            
+            if let data = data {
+                print(data)
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    print(json)
+                } catch {
+                    print(error)
+                }
+                
+            }
+            }.resume()
+    }
+    
+    func loadPost(){
+        let parameters = ["username": "@kilo_loco", "tweet": "HelloWorld"]
+        
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: parameters, options: []) else { return }
+        request.httpBody = httpBody
+        
+        let session = URLSession.shared
+        session.dataTask(with: request) { (data, response, error) in
+            if let response = response {
+                print(response)
+            }
+            
+            if let data = data {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    print(json)
+                } catch {
+                    print(error)
+                }
+            }
+            
+            }.resume()
+    }
+}
+
